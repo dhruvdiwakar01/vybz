@@ -1,7 +1,7 @@
 const express = require("express")
 const cookieParser = require("cookie-parser")
 const cors = require("cors")
-const path = require("path")  // ✅ add this
+const path = require("path")
 const app = express()
 
 app.use(express.json())
@@ -10,7 +10,7 @@ app.use(cors({
   origin: "https://vybz-1.onrender.com",
   credentials: true
 }))
-app.use(express.static("./public"))
+app.use(express.static(path.join(__dirname, "../public")))
 
 /**
  * Routes
@@ -21,9 +21,9 @@ const songRoutes = require("./routes/song.routes")
 app.use("/api/songs", songRoutes)
 app.use("/api/auth", authRoutes)
 
-// ✅ Add this at the very bottom — for React Router to work
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"))
+// Fix: new catch-all syntax + correct path
+app.get("/{*path}", (req, res) => {
+    res.sendFile(path.join(__dirname, "../public", "index.html"))
 })
 
 module.exports = app
