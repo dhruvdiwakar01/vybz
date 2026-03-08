@@ -13,6 +13,12 @@ $text-primary: #eef2f7;
 $text-secondary: #6b7a8d;
 $text-muted: #3a4555;
 
+// ─── Breakpoints ─────────────────────────────
+$mobile:  480px;
+$tablet:  768px;
+$laptop:  1024px;
+$desktop: 1025px;
+
 // ─── Base ────────────────────────────────────
 * {
   box-sizing: border-box;
@@ -37,6 +43,7 @@ $text-muted: #3a4555;
     display: flex;
     flex-direction: column;
     height: 100%;
+    transition: transform 0.3s ease, width 0.3s ease;
 
     &__logo {
       padding: 1.75rem 1.75rem 1.25rem;
@@ -52,6 +59,7 @@ $text-muted: #3a4555;
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
 
         svg {
           width: 18px;
@@ -169,6 +177,115 @@ $text-muted: #3a4555;
         }
       }
     }
+
+    // ── Laptop: collapse to icon-only sidebar ─
+    @media (max-width: $laptop) {
+      width: 64px;
+      min-width: 64px;
+
+      &__logo {
+        padding: 1.25rem 0;
+        justify-content: center;
+
+        h1 { display: none; }
+      }
+
+      &__nav {
+        padding: 0 0.5rem;
+
+        .nav-label { display: none; }
+
+        .nav-link {
+          justify-content: center;
+          padding: 0.65rem;
+          gap: 0;
+          span { display: none; }
+
+          // Hide label text
+          font-size: 0;
+
+          svg { width: 20px; height: 20px; }
+        }
+      }
+
+      &__user {
+        padding: 0.75rem 0.5rem;
+
+        .user-card {
+          justify-content: center;
+          padding: 0.5rem;
+          gap: 0;
+
+          .user-info,
+          .settings-btn { display: none; }
+        }
+      }
+    }
+
+    // ── Tablet & Mobile: hidden drawer ────────
+    @media (max-width: $tablet) {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 240px;
+      min-width: 240px;
+      z-index: 200;
+      transform: translateX(-100%);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+
+      &.is-open {
+        transform: translateX(0);
+      }
+
+      &__logo {
+        padding: 1.5rem 1.5rem 1rem;
+        justify-content: flex-start;
+
+        h1 { display: block; }
+      }
+
+      &__nav {
+        padding: 0 0.875rem;
+
+        .nav-label { display: block; }
+
+        .nav-link {
+          justify-content: flex-start;
+          font-size: 0.875rem;
+          gap: 0.75rem;
+
+          // Show label text again
+          span { display: inline; }
+        }
+      }
+
+      &__user {
+        padding: 1rem 0.875rem;
+
+        .user-card {
+          justify-content: flex-start;
+          gap: 0.75rem;
+
+          .user-info,
+          .settings-btn { display: flex; }
+        }
+      }
+    }
+  }
+
+  // ── Sidebar overlay (mobile/tablet) ─────────
+  .sidebar-overlay {
+    display: none;
+
+    @media (max-width: $tablet) {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 199;
+      backdrop-filter: blur(2px);
+    }
   }
 
   // ─── Main ──────────────────────────────────
@@ -177,6 +294,7 @@ $text-muted: #3a4555;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 0;
 
     .topbar {
       height: 72px;
@@ -188,6 +306,30 @@ $text-muted: #3a4555;
       background: rgba(6, 8, 9, 0.85);
       backdrop-filter: blur(12px);
       flex-shrink: 0;
+      gap: 1rem;
+
+      // Hamburger (hidden on desktop/laptop)
+      .menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: $text-secondary;
+        cursor: pointer;
+        padding: 0.4rem;
+        border-radius: 8px;
+        flex-shrink: 0;
+        transition: color 0.15s;
+
+        svg { width: 22px; height: 22px; display: block; }
+
+        &:hover { color: $text-primary; }
+
+        @media (max-width: $tablet) {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
 
       .search-box {
         position: relative;
@@ -227,6 +369,8 @@ $text-muted: #3a4555;
       }
 
       .topbar-right {
+        flex-shrink: 0;
+
         .icon-btn {
           background: none;
           border: none;
@@ -240,12 +384,47 @@ $text-muted: #3a4555;
           &:hover { color: $text-primary; }
         }
       }
+
+      // Tablet
+      @media (max-width: $tablet) {
+        padding: 0 1.25rem;
+        height: 60px;
+
+        .search-box { max-width: none; }
+      }
+
+      // Mobile
+      @media (max-width: $mobile) {
+        padding: 0 1rem;
+        height: 56px;
+        gap: 0.625rem;
+
+        .search-box input {
+          font-size: 0.8rem;
+          padding: 0.5rem 0.875rem 0.5rem 2.25rem;
+        }
+      }
     }
 
     .page-body {
       flex: 1;
       overflow-y: auto;
       padding: 2.25rem 2.5rem 7rem;
+
+      // Laptop
+      @media (max-width: $laptop) {
+        padding: 2rem 2rem 7rem;
+      }
+
+      // Tablet
+      @media (max-width: $tablet) {
+        padding: 1.5rem 1.5rem 9rem;
+      }
+
+      // Mobile
+      @media (max-width: $mobile) {
+        padding: 1.25rem 1rem 10rem;
+      }
 
       // ── Mood Section ─────────────────────
       .mood-section {
@@ -254,6 +433,25 @@ $text-muted: #3a4555;
         gap: 3rem;
         align-items: center;
         margin-bottom: 3.5rem;
+
+        // Laptop
+        @media (max-width: $laptop) {
+          gap: 2rem;
+          margin-bottom: 2.5rem;
+        }
+
+        // Tablet: stack vertically
+        @media (max-width: $tablet) {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+          margin-bottom: 2rem;
+        }
+
+        // Mobile
+        @media (max-width: $mobile) {
+          gap: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
 
         .mood-text {
           .tag {
@@ -273,6 +471,10 @@ $text-muted: #3a4555;
             line-height: 1.1;
             letter-spacing: -0.03em;
             margin-bottom: 1rem;
+
+            @media (max-width: $laptop) { font-size: 2.25rem; }
+            @media (max-width: $tablet) { font-size: 2.5rem; }
+            @media (max-width: $mobile) { font-size: 1.875rem; }
           }
 
           p {
@@ -280,6 +482,9 @@ $text-muted: #3a4555;
             font-size: 0.95rem;
             line-height: 1.7;
             max-width: 380px;
+
+            @media (max-width: $tablet) { max-width: 100%; }
+            @media (max-width: $mobile) { font-size: 0.875rem; }
           }
 
           .mood-actions {
@@ -287,6 +492,12 @@ $text-muted: #3a4555;
             align-items: center;
             gap: 1.25rem;
             margin-top: 1.75rem;
+            flex-wrap: wrap;
+
+            @media (max-width: $mobile) {
+              gap: 1rem;
+              margin-top: 1.25rem;
+            }
 
             .detect-btn {
               display: flex;
@@ -304,20 +515,28 @@ $text-muted: #3a4555;
               box-shadow: 0 6px 24px $green-glow;
               transition: all 0.2s;
               letter-spacing: 0.02em;
+              white-space: nowrap;
 
-              svg { width: 18px; height: 18px; }
+              svg { width: 18px; height: 18px; flex-shrink: 0; }
 
               &:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 10px 32px rgba(136, 236, 136, 0.35);
               }
               &:active { transform: translateY(0); }
+
+              @media (max-width: $mobile) {
+                padding: 0.65rem 1.25rem;
+                font-size: 0.8125rem;
+              }
             }
 
             .divider {
               width: 1px;
               height: 40px;
               background: $border;
+
+              @media (max-width: $mobile) { display: none; }
             }
 
             .current-mood {
@@ -355,6 +574,17 @@ $text-muted: #3a4555;
           aspect-ratio: 16/9;
           box-shadow: 0 0 40px rgba(136, 236, 136, 0.05);
 
+          // On tablet, limit max-width so it doesn't go full width & look huge
+          @media (max-width: $tablet) {
+            max-width: 560px;
+            width: 100%;
+          }
+
+          @media (max-width: $mobile) {
+            max-width: 100%;
+            border-radius: 12px;
+          }
+
           .face-expression {
             width: 100%;
             height: 100%;
@@ -382,6 +612,11 @@ $text-muted: #3a4555;
 
             svg { width: 48px; height: 48px; opacity: 0.35; }
             p { font-size: 0.8rem; opacity: 0.5; }
+
+            @media (max-width: $mobile) {
+              svg { width: 36px; height: 36px; }
+              p { font-size: 0.72rem; }
+            }
           }
 
           .live-badge {
@@ -409,6 +644,12 @@ $text-muted: #3a4555;
               background: #ef4444;
               animation: blink 1.4s infinite;
             }
+
+            @media (max-width: $mobile) {
+              bottom: 0.625rem;
+              left: 0.625rem;
+              padding: 0.25rem 0.5rem;
+            }
           }
         }
       }
@@ -423,6 +664,19 @@ $text-muted: #3a4555;
         background: radial-gradient(ellipse at 70% 40%, #0d1b3e 0%, #050810 60%, #000 100%);
         border: 1px solid rgba(136, 236, 136, 0.1);
         box-shadow: 0 0 60px rgba(0, 0, 40, 0.6), inset 0 0 80px rgba(0, 0, 20, 0.5);
+
+        @media (max-width: $laptop) { height: 280px; }
+
+        @media (max-width: $tablet) {
+          height: 240px;
+          border-radius: 16px;
+          cursor: default; // restore cursor on touch devices
+        }
+
+        @media (max-width: $mobile) {
+          height: 200px;
+          border-radius: 14px;
+        }
 
         // Stars
         .stars {
@@ -451,6 +705,13 @@ $text-muted: #3a4555;
           box-shadow: 0 0 30px rgba(255, 220, 100, 0.35), 0 0 60px rgba(255, 200, 50, 0.15);
           pointer-events: none;
 
+          @media (max-width: $mobile) {
+            width: 38px;
+            height: 38px;
+            top: 16px;
+            right: 20px;
+          }
+
           &::after {
             content: '';
             position: absolute;
@@ -477,6 +738,13 @@ $text-muted: #3a4555;
             top: 55px;
             left: 60px;
             animation: floatCloud 18s linear infinite;
+
+            @media (max-width: $mobile) {
+              width: 100px;
+              height: 18px;
+              top: 40px;
+              left: 20px;
+            }
           }
 
           &--2 {
@@ -486,6 +754,13 @@ $text-muted: #3a4555;
             left: 30px;
             animation: floatCloud 24s linear infinite reverse;
             opacity: 0.5;
+
+            @media (max-width: $mobile) {
+              width: 70px;
+              height: 14px;
+              top: 66px;
+              left: 10px;
+            }
           }
         }
 
@@ -496,6 +771,16 @@ $text-muted: #3a4555;
           left: 2rem;
           z-index: 2;
           pointer-events: none;
+
+          @media (max-width: $tablet) {
+            bottom: 1.25rem;
+            left: 1.5rem;
+          }
+
+          @media (max-width: $mobile) {
+            bottom: 1rem;
+            left: 1rem;
+          }
 
           .playground-tag {
             display: inline-block;
@@ -517,11 +802,15 @@ $text-muted: #3a4555;
             font-weight: 700;
             color: $text-primary;
             margin-bottom: 0.2rem;
+
+            @media (max-width: $mobile) { font-size: 0.95rem; }
           }
 
           p {
             font-size: 0.78rem;
             color: $text-secondary;
+
+            @media (max-width: $mobile) { font-size: 0.72rem; }
           }
         }
 
@@ -539,6 +828,7 @@ $text-muted: #3a4555;
   }
 }
 
+// ─── Keyframes ───────────────────────────────
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.2; }

@@ -102,12 +102,22 @@ function CameraIcon() {
     </svg>
   )
 }
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="3" y1="6"  x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  )
+}
 
 // ── Home Component ────────────────────────────
 const Home = () => {
   const { handleGetSong } = useSong()
   const [activeNav, setActiveNav] = useState('Discover')
   const [currentMood, setCurrentMood] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Playground refs
   const canvasRef = useRef(null)
@@ -128,6 +138,15 @@ const Home = () => {
     })), []
   )
 
+  // Close sidebar on resize to tablet+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) setSidebarOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Shooting star trail canvas
   useEffect(() => {
     const canvas = canvasRef.current
@@ -136,7 +155,6 @@ const Home = () => {
 
     const ctx = canvas.getContext('2d')
 
-    // Resize canvas to match playground
     const resize = () => {
       canvas.width = playground.offsetWidth
       canvas.height = playground.offsetHeight
@@ -145,14 +163,12 @@ const Home = () => {
     const resizeObserver = new ResizeObserver(resize)
     resizeObserver.observe(playground)
 
-    // Mouse move — spawn a shooting star particle
     const handleMouseMove = (e) => {
       const rect = playground.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
       mouseRef.current = { x, y }
 
-      // Spawn multiple trail particles per move
       for (let i = 0; i < 3; i++) {
         trailsRef.current.push({
           x,
@@ -161,7 +177,6 @@ const Home = () => {
           vy: (Math.random() - 0.5) * 1.5,
           size: Math.random() * 3 + 1.5,
           alpha: 1,
-          // Alternate between white and green glow
           color: Math.random() > 0.4 ? '255,255,255' : '136,236,136',
           tailLength: Math.random() * 18 + 10,
           angle: Math.atan2(
@@ -171,20 +186,17 @@ const Home = () => {
         })
       }
 
-      // Cap trail particles
       if (trailsRef.current.length > 180) {
         trailsRef.current = trailsRef.current.slice(-180)
       }
     }
 
-    // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       trailsRef.current = trailsRef.current.filter(p => p.alpha > 0.02)
 
       trailsRef.current.forEach(p => {
-        // Draw glowing head
         const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.5)
         gradient.addColorStop(0, `rgba(${p.color}, ${p.alpha})`)
         gradient.addColorStop(1, `rgba(${p.color}, 0)`)
@@ -194,7 +206,6 @@ const Home = () => {
         ctx.fillStyle = gradient
         ctx.fill()
 
-        // Draw tail
         const tailX = p.x - Math.cos(p.angle) * p.tailLength
         const tailY = p.y - Math.sin(p.angle) * p.tailLength
 
@@ -210,7 +221,6 @@ const Home = () => {
         ctx.lineCap = 'round'
         ctx.stroke()
 
-        // Fade out & drift
         p.alpha -= 0.032
         p.x += p.vx
         p.y += p.vy
@@ -229,23 +239,28 @@ const Home = () => {
     }
   }, [])
 
-  // Called by FaceExpression when mood is detected
   const handleMoodDetected = (mood) => {
     setCurrentMood(mood)
     handleGetSong({ mood })
   }
 
-  // Clicking "Detect My Mood" triggers the hidden button inside FaceExpression
   const handleDetectClick = () => {
     const hiddenBtn = document.getElementById('face-detect-trigger')
     if (hiddenBtn) hiddenBtn.click()
   }
 
+  const closeSidebar = () => setSidebarOpen(false)
+
   return (
     <div className="vybz-home">
 
+      {/* ── Sidebar overlay (mobile/tablet) ── */}
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={closeSidebar} />
+      )}
+
       {/* ── Sidebar ──────────────────────── */}
-      <aside className="sidebar">
+      <aside className={`sidebar${sidebarOpen ? ' is-open' : ''}`}>
         <div className="sidebar__logo">
           <div className="logo-icon"><WavesIcon /></div>
           <h1>VYBZ</h1>
@@ -257,7 +272,7 @@ const Home = () => {
             <button
               key={label}
               className={`nav-link${activeNav === label ? ' active' : ''}`}
-              onClick={() => setActiveNav(label)}
+              onClick={() => { setActiveNav(label); closeSidebar() }}
             >
               <Icon />
               {label}
@@ -269,7 +284,7 @@ const Home = () => {
             <button
               key={label}
               className={`nav-link${activeNav === label ? ' active' : ''}`}
-              onClick={() => setActiveNav(label)}
+              onClick={() => { setActiveNav(label); closeSidebar() }}
             >
               <Icon />
               {label}
@@ -296,6 +311,11 @@ const Home = () => {
 
         {/* Topbar */}
         <header className="topbar">
+          {/* Hamburger — only visible on tablet/mobile via CSS */}
+          <button className="menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            <MenuIcon />
+          </button>
+
           <div className="search-box">
             <SearchIcon />
             <input type="text" placeholder="Search artists, tracks, or vibes..." />
@@ -351,13 +371,11 @@ const Home = () => {
             </div>
           </section>
 
-          {/* 🌠 Playground Section — shooting stars follow cursor */}
+          {/* 🌠 Playground Section */}
           <section className="playground-section" ref={playgroundRef}>
 
-            {/* Canvas for shooting star trails */}
             <canvas ref={canvasRef} className="playground-canvas" />
 
-            {/* Background twinkling stars */}
             <div className="stars">
               {bgStars.map(s => (
                 <div key={s.id} className="star" style={{
@@ -371,14 +389,10 @@ const Home = () => {
               ))}
             </div>
 
-            {/* Moon */}
             <div className="moon" />
-
-            {/* Floating clouds */}
             <div className="cloud cloud--1" />
             <div className="cloud cloud--2" />
 
-            {/* Label */}
             <div className="playground-label">
               <span className="playground-tag">Chill Zone</span>
               <h3>Move your cursor around</h3>
