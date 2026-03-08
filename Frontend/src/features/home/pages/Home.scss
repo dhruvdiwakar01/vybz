@@ -12,6 +12,8 @@ $border: rgba(255, 255, 255, 0.06);
 $text-primary: #eef2f7;
 $text-secondary: #6b7a8d;
 $text-muted: #3a4555;
+$red: #ef4444;                          // ── NEW
+$red-dim: rgba(239, 68, 68, 0.12);     // ── NEW
 
 // ─── Breakpoints ─────────────────────────────
 $mobile:  480px;
@@ -164,16 +166,37 @@ $desktop: 1025px;
           }
         }
 
-        .settings-btn {
+        // ── CHANGED: was .settings-btn, now .logout-btn ──
+        .logout-btn {
           background: none;
           border: none;
           color: $text-muted;
           cursor: pointer;
           display: flex;
-          padding: 2px;
-          transition: color 0.15s;
+          align-items: center;
+          justify-content: center;
+          padding: 5px;
+          border-radius: 7px;
+          transition: all 0.18s ease;
+          flex-shrink: 0;
+
           svg { width: 16px; height: 16px; }
-          &:hover { color: $text-secondary; }
+
+          &:hover {
+            color: $red;
+            background: $red-dim;
+          }
+
+          &.loading {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
         }
       }
     }
@@ -216,8 +239,13 @@ $desktop: 1025px;
           padding: 0.5rem;
           gap: 0;
 
-          .user-info,
-          .settings-btn { display: none; }
+          .user-info { display: none; }
+
+          // Show only logout icon centred on laptop
+          .logout-btn {
+            padding: 6px;
+            svg { width: 18px; height: 18px; }
+          }
         }
       }
     }
@@ -267,8 +295,8 @@ $desktop: 1025px;
           justify-content: flex-start;
           gap: 0.75rem;
 
-          .user-info,
-          .settings-btn { display: flex; }
+          .user-info { display: flex; flex-direction: column; }
+          .logout-btn { display: flex; }
         }
       }
     }

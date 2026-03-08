@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router'
 import FaceExpression from '../../expressions/components/FaceExpressions'
 import Player from '../components/Player'
 import { useSong } from '../hooks/useSongs'
@@ -77,14 +78,6 @@ function BellIcon() {
     </svg>
   )
 }
-function SettingsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  )
-}
 function FaceIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -111,13 +104,24 @@ function MenuIcon() {
     </svg>
   )
 }
+function LogoutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  )
+}
 
 // ── Home Component ────────────────────────────
 const Home = () => {
   const { handleGetSong } = useSong()
+  const navigate = useNavigate()
   const [activeNav, setActiveNav] = useState('Discover')
   const [currentMood, setCurrentMood] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Playground refs
   const canvasRef = useRef(null)
@@ -193,7 +197,6 @@ const Home = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-
       trailsRef.current = trailsRef.current.filter(p => p.alpha > 0.02)
 
       trailsRef.current.forEach(p => {
@@ -251,6 +254,22 @@ const Home = () => {
 
   const closeSidebar = () => setSidebarOpen(false)
 
+  // ── Logout ───────────────────────────────────
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'GET',
+        credentials: 'include',
+      })
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      setIsLoggingOut(false)
+      navigate('/login')
+    }
+  }
+
   return (
     <div className="vybz-home">
 
@@ -292,6 +311,7 @@ const Home = () => {
           ))}
         </nav>
 
+        {/* ── User card with logout ── */}
         <div className="sidebar__user">
           <div className="user-card">
             <div className="avatar">
@@ -301,7 +321,14 @@ const Home = () => {
               <span className="name">userXYZ</span>
               <span className="role">Premium Member+</span>
             </div>
-            <button className="settings-btn"><SettingsIcon /></button>
+            <button
+              className={`logout-btn${isLoggingOut ? ' loading' : ''}`}
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              title="Logout"
+            >
+              <LogoutIcon />
+            </button>
           </div>
         </div>
       </aside>
@@ -311,7 +338,6 @@ const Home = () => {
 
         {/* Topbar */}
         <header className="topbar">
-          {/* Hamburger — only visible on tablet/mobile via CSS */}
           <button className="menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
             <MenuIcon />
           </button>
@@ -355,7 +381,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Camera feed with FaceExpression embedded */}
             <div className="camera-wrap">
               <FaceExpression onMoodDetected={handleMoodDetected} />
               {!currentMood && (
@@ -373,7 +398,6 @@ const Home = () => {
 
           {/* 🌠 Playground Section */}
           <section className="playground-section" ref={playgroundRef}>
-
             <canvas ref={canvasRef} className="playground-canvas" />
 
             <div className="stars">
@@ -398,7 +422,6 @@ const Home = () => {
               <h3>Move your cursor around</h3>
               <p>Shooting stars follow your vibe 🌠</p>
             </div>
-
           </section>
 
         </div>
